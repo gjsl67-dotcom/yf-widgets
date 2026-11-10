@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>예스폼 취업 위젯</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700&family=Inter:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  @font-face{font-family:'NoonnuBasicGothic';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noon-2410@1.0/NoonnuBasicGothicRegular.woff2') format('woff2');font-weight:normal;font-display:swap}
+  :root{--paper:#FBF8F0;--white:#FFFFFF;--line:#E9E3D6;--dot:#E3DCCD;--ink:#4A4540;--sub:#9A938A;--faint:#C8C1B5;--yellow:#FFF0A8;--coral:#FFD6CB;--sky:#D7E7F4;--sage:#DCEBD3;--lilac:#E6DFF3;--coralD:#E8876E;--tape:#FFE98A}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#fff;color:var(--ink);font-family:'Gothic A1',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  html,body{scrollbar-width:none;-ms-overflow-style:none} html::-webkit-scrollbar,body::-webkit-scrollbar{display:none}
+  body{padding:2px 4px}
+  button,input,select{font:inherit;color:inherit}
+  button{background:none;border:0;cursor:pointer}
+  .hand{font-family:'NoonnuBasicGothic','Gothic A1',sans-serif}
+  .paper{background:var(--paper) radial-gradient(var(--dot) 1.2px, transparent 1.3px);background-size:28px 28px;border-radius:20px;padding:16px 20px;position:relative;min-height:calc(100vh - 4px)}
+  .board{display:grid;grid-template-columns:1fr 440px;gap:16px;align-items:start}
+  @media (max-width:900px){.board{grid-template-columns:1fr}}
+
+  /* ---- left : deadlines ---- */
+  .lh{display:flex;align-items:center;gap:12px;margin-bottom:10px;position:relative}
+  .ttl{font-size:22px;color:var(--ink);position:relative;display:inline-block;padding:0 4px}
+  .ttl::after{content:'';position:absolute;left:0;right:0;bottom:2px;height:10px;background:var(--yellow);z-index:-1;border-radius:3px}
+  .meta{font-family:Inter;font-size:10px;letter-spacing:.14em;color:var(--sub);font-weight:600;text-transform:uppercase}
+  .addbtn{margin-left:auto;background:#fff;border:1px solid var(--line);border-radius:13px;padding:5px 12px;font-size:11px;font-weight:500}
+  .more{width:26px;height:26px;border-radius:13px;background:#fff;border:1px solid var(--line);font-weight:700;display:grid;place-items:center}
+  .card{background:#fff;border-radius:16px;padding:4px 0;overflow:hidden}
+  .list{max-height:262px;overflow:auto;scrollbar-width:none}.list::-webkit-scrollbar{display:none}
+  .row{display:grid;grid-template-columns:34px 1fr 96px 110px 26px;align-items:center;gap:8px;padding:11px 16px;position:relative}
+  .row+.row::before{content:'';position:absolute;left:16px;right:16px;top:0;border-top:1.5px dotted var(--dot)}
+  .chk{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--faint);display:grid;place-items:center}
+  .chk svg{width:10px;height:10px;opacity:0}
+  .row.urgent .chk{border-color:var(--coralD)}
+  .row.done .chk{background:var(--sage);border-color:var(--sage)} .row.done .chk svg{opacity:1}
+  .row.done .co,.row.done .ro{text-decoration:line-through;color:var(--faint)}
+  .co{font-weight:700;font-size:14px}.ro{font-size:11px;color:var(--sub);margin-top:3px}
+  .chip{justify-self:start;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:500;white-space:nowrap}
+  .dd{font-size:26px;text-align:right;letter-spacing:-.01em}
+  .row.urgent .dd{color:var(--coralD)}
+  .row.done .dd{color:var(--faint);font-size:14px}
+  .del{opacity:0;font-size:14px;color:var(--sub);text-align:center}
+  .row:hover .del{opacity:1}
+  .del.arm{opacity:1;background:var(--coralD);color:#fff;border-radius:8px;font-size:10px}
+  .empty{padding:36px 16px;text-align:center;color:var(--sub);font-size:13px;line-height:1.7}
+  /* add form */
+  .addf{display:none;grid-template-columns:1.2fr 1fr 110px 130px 70px;gap:8px;padding:10px 16px;border-top:1.5px dotted var(--dot);background:#fff}
+  .addf.open{display:grid}
+  .addf input,.addf select{border:1px solid var(--line);border-radius:10px;padding:7px 10px;font-size:12px;background:#fff;outline:none;width:100%}
+  .addf input:focus,.addf select:focus{border-color:var(--ink)}
+  .addf button{background:var(--ink);color:#fff;border-radius:10px;font-size:12px;font-weight:700}
+
+  /* ---- right : stickies ---- */
+  .sticky{border-radius:14px;padding:14px 18px;position:relative;margin-bottom:12px}
+  .sticky.y{background:var(--yellow)} .sticky.w{background:#fff} .sticky.s{background:var(--sky)}
+  .tape{position:absolute;top:-9px;width:60px;height:18px;background:rgba(255,255,255,.85);border-radius:2px;transform:rotate(-4deg)}
+  .sticky.y .tape{left:50%;margin-left:-30px} .sticky.s .tape{left:16px;transform:rotate(-7deg)}
+  .st{font-size:17px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+  .st small{font-family:Inter;font-size:10px;color:var(--sub);letter-spacing:.08em;font-weight:600}
+  .goal{display:grid;grid-template-columns:62px 1fr 64px;align-items:center;gap:10px;padding:5px 0}
+  .goal .k{font-size:12px}
+  .goal .bar{height:8px;border-radius:4px;background:#fff;overflow:hidden}.goal .bar i{display:block;height:100%;background:var(--coralD);border-radius:4px;transition:width .2s}
+  .goal .v{display:flex;align-items:center;justify-content:flex-end;gap:2px;font-size:14px}
+  .goal .v button{width:18px;height:18px;border-radius:50%;font-size:12px;line-height:1;color:var(--sub)}
+  .goal .v button:hover{background:rgba(0,0,0,.06);color:var(--ink)}
+  .goal .v b{font-weight:400;min-width:46px;text-align:center}
+  .goal .v b span{cursor:pointer;border-bottom:1px dotted var(--faint)}
+  .week{display:flex;align-items:flex-start;gap:0}
+  .week .st{margin:0 14px 0 0;min-width:52px;padding-top:4px}
+  .wk{flex:1;display:grid;grid-template-columns:repeat(3,1fr)}
+  .wk button{text-align:left}
+  .wk b{display:block;font-size:26px;color:var(--coralD);line-height:1}
+  .wk span{display:block;font-size:10px;color:var(--sub);margin-top:4px}
+  .wk button:hover b{text-decoration:underline dotted var(--faint)}
+  .focus .lab{font-size:10px;color:var(--sub);margin-bottom:4px}
+  .focus p{font-size:15px;line-height:1.5;outline:none;min-height:22px}
+  .focus p:empty::before{content:'오늘 가장 집중할 한 가지';color:var(--faint)}
+  .star{position:absolute;right:18px;bottom:12px;color:var(--coral);font-size:18px}
+
+  /* menu & dialogs (shared pattern) */
+  .menuwrap{position:relative}
+  .menu{position:absolute;right:0;top:32px;width:190px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,.06);z-index:20;display:none;overflow:hidden}
+  .menu.open{display:block}
+  .menu button{display:block;width:100%;padding:10px 14px;font-size:12.5px;text-align:left;border-top:1px solid var(--line)}
+  .menu button:first-child{border-top:0}.menu button:hover{background:var(--paper)}
+  .menu button.danger{color:#B23B3B}.menu button.danger.arm{background:#B23B3B;color:#fff}
+  .dlg{position:fixed;inset:0;background:rgba(251,248,240,.92);z-index:30;display:none;align-items:center;justify-content:center;padding:16px}
+  .dlg.open{display:flex}
+  .dlg .box2{width:min(560px,100%);background:#fff;border-radius:16px;padding:24px 26px;border:1px solid var(--line)}
+  .dlg h3{font-size:19px;margin-bottom:10px}
+  .dlg p{font-size:12px;color:var(--sub);line-height:1.6}
+  .dlg textarea{width:100%;margin:14px 0;height:110px;background:var(--paper);border:0;border-radius:10px;padding:12px;font-family:Inter,monospace;font-size:11px;line-height:1.5;color:var(--ink);word-break:break-all;resize:none;outline:none}
+  .dlg textarea.in{background:#fff;border:1px solid var(--line)}
+  .dlg .acts{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}
+  .dlg .acts button{height:38px;padding:0 20px;border-radius:12px;font-size:12.5px;font-weight:700}
+  .dlg .pri{background:var(--ink);color:#fff}.dlg .sec{border:1px solid var(--line)}
+  .toast{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:12px;padding:10px 18px;border-radius:999px;z-index:40;opacity:0;transition:opacity .2s;pointer-events:none}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+  const qs=new URLSearchParams(location.search);
+  const store={get(k,d){try{return JSON.parse(localStorage.getItem('yfj_'+k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem('yfj_'+k,JSON.stringify(v))}catch(e){}}};
+  const pad=n=>String(n).padStart(2,'0');const today=new Date();today.setHours(0,0,0,0);
+  const key=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  const KD=['일','월','화','수','목','금','토'];
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const STAGES={'관심':'var(--lilac)','서류 작성':'var(--yellow)','서류 제출':'var(--sky)','서류 합격':'var(--sage)','면접':'var(--lilac)','최종 합격':'var(--coral)'};
+  const CHECK='<svg viewBox="0 0 10 10" fill="none" stroke="#4A4540" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2 4.2 7.3 8 2.8"/></svg>';
+  function weekKey(){const m=new Date(today);m.setDate(today.getDate()-((today.getDay()+6)%7));return key(m);}
+  function toast(msg){let t=document.querySelector('.toast');if(!t){t=document.createElement('div');t.className='toast';document.body.appendChild(t);}t.textContent='✓  '+msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2200);}
+  // sample on first run
+  const SAMPLE=[{c:'오름소프트',r:'퍼포먼스 마케터',s:'서류 합격',d:key(new Date(today.getTime()+2*864e5))},{c:'새바람식품',r:'브랜드 마케터',s:'서류 제출',d:key(new Date(today.getTime()+6*864e5))},{c:'별빛에듀',r:'그로스 마케터',s:'서류 작성',d:key(new Date(today.getTime()+16*864e5))},{c:'푸른모빌리티',r:'CRM 마케터',s:'관심',d:key(new Date(today.getTime()+23*864e5))}];
+  let items=store.get('deadlines',null);if(!items){items=SAMPLE.map(x=>({...x,id:Math.random().toString(36).slice(2),done:false}));store.set('deadlines',items);}
+  let goals=store.get('goals',{apply:[0,10],interview:[0,3],offer:[0,1]});
+  let weekly=store.get('weekly',{});const wk=weekKey();if(!weekly[wk])weekly[wk]={save:0,submit:0,interview:0};
+  function dday(d){const t=new Date(d+'T00:00:00');const n=Math.round((t-today)/864e5);return n===0?'D-DAY':n>0?'D-'+n:'D+'+(-n);}
+  function board(){
+    const root=document.createElement('div');root.className='paper board';
+    const L=document.createElement('div');const R=document.createElement('div');root.append(L,R);
+    L.innerHTML=`<div class="lh"><span class="ttl hand">다가오는 마감</span><span class="meta up"></span><button class="addbtn">+ 공고 추가</button><div class="menuwrap"><button class="more" aria-label="메뉴">⋯</button><div class="menu"><button data-a="export">기록 내보내기</button><button data-a="import">기록 불러오기</button><button data-a="clear">지난 마감 정리</button><button data-a="reset" class="danger">기록 모두 지우기</button></div></div></div>
+      <div class="card"><div class="list"></div><form class="addf"><input name="c" placeholder="회사명" maxlength="20" required><input name="r" placeholder="직무" maxlength="20"><select name="s">${Object.keys(STAGES).map(s=>`<option>${s}</option>`).join('')}</select><input name="d" type="date" required><button type="submit">추가</button></form></div>`;
+    const list=L.querySelector('.list');
+    function render(){
+      const sorted=[...items].sort((a,b)=>(a.done-b.done)||(a.d<b.d?-1:1));
+      const up=items.filter(x=>!x.done&&x.d>=key(today)).length;L.querySelector('.up').textContent=up+' upcoming';
+      list.innerHTML='';if(!sorted.length){list.innerHTML='<div class="empty">아직 저장한 공고가 없어요.<br>+ 공고 추가로 첫 마감을 적어 보세요.</div>';return;}
+      sorted.forEach(it=>{const n=Math.round((new Date(it.d+'T00:00:00')-today)/864e5);const row=document.createElement('div');row.className='row'+(it.done?' done':'')+(!it.done&&n<=3?' urgent':'');
+        const dt=new Date(it.d+'T00:00:00');
+        row.innerHTML=`<button class="chk" aria-label="완료">${CHECK}</button><div><div class="co">${esc(it.c)}</div><div class="ro">${esc(it.r||'')}${it.r?'  ·  ':''}${dt.getMonth()+1}.${dt.getDate()} (${KD[dt.getDay()]})</div></div><span class="chip" style="background:${STAGES[it.s]||'var(--line)'}">${esc(it.s)}</span><div class="dd hand">${dday(it.d)}</div><button class="del" aria-label="삭제">×</button>`;
+        row.querySelector('.chk').onclick=()=>{it.done=!it.done;store.set('deadlines',items);render();};
+        const del=row.querySelector('.del');del.onclick=()=>{if(del.classList.contains('arm')){items=items.filter(x=>x.id!==it.id);store.set('deadlines',items);render();}else{del.classList.add('arm');del.textContent='삭제';setTimeout(()=>{if(del.isConnected){del.classList.remove('arm');del.textContent='×';}},2500);}};
+        list.appendChild(row);});
+    }
+    const form=L.querySelector('.addf');L.querySelector('.addbtn').onclick=()=>{form.classList.toggle('open');if(form.classList.contains('open'))form.c.focus();};
+    form.onsubmit=e=>{e.preventDefault();const f=form;if(!f.c.value.trim()||!f.d.value)return;items.push({id:Math.random().toString(36).slice(2),c:f.c.value.trim(),r:f.r.value.trim(),s:f.s.value,d:f.d.value,done:false});store.set('deadlines',items);weekly[wk].save++;store.set('weekly',weekly);f.reset();form.classList.remove('open');render();renderWeek();};
+    // menu
+    const menu=L.querySelector('.menu'),more=L.querySelector('.more');more.onclick=e=>{e.stopPropagation();menu.classList.toggle('open');};document.addEventListener('click',()=>{menu.classList.remove('open');const d=menu.querySelector('.danger');d.classList.remove('arm');d.textContent='기록 모두 지우기';});menu.onclick=e=>e.stopPropagation();
+    menu.querySelector('[data-a=clear]').onclick=()=>{items=items.filter(x=>!x.done&&x.d>=key(today));store.set('deadlines',items);menu.classList.remove('open');render();toast('지난 마감을 정리했어요');};
+    const rst=menu.querySelector('[data-a=reset]');rst.onclick=()=>{if(rst.classList.contains('arm')){['deadlines','goals','weekly','focus'].forEach(k=>{try{localStorage.removeItem('yfj_'+k)}catch(e){}});location.reload();}else{rst.classList.add('arm');rst.textContent='한 번 더 누르면 지워져요';}};
+    menu.querySelector('[data-a=export]').onclick=()=>{menu.classList.remove('open');openExport();};
+    menu.querySelector('[data-a=import]').onclick=()=>{menu.classList.remove('open');openImport();};
+    // right
+    R.innerHTML=`<div class="sticky y"><i class="tape"></i><div class="st hand">이번 시즌 목표 <small>~ 3/31</small></div><div class="goals"></div></div>
+      <div class="sticky w week"><div class="st hand">이번 주</div><div class="wk"></div></div>
+      <div class="sticky s focus"><i class="tape"></i><div class="lab">오늘의 한 줄</div><p class="hand" contenteditable="true" spellcheck="false"></p><span class="star">✦</span></div>`;
+    const G=[['apply','지원'],['interview','면접'],['offer','최종 합격']];
+    function renderGoals(){const g=R.querySelector('.goals');g.innerHTML='';G.forEach(([k,n])=>{const [v,t]=goals[k];const row=document.createElement('div');row.className='goal';row.innerHTML=`<span class="k">${n}</span><div class="bar"><i style="width:${Math.min(100,v/t*100)}%"></i></div><div class="v"><button class="m">−</button><b class="hand">${v} / <span title="목표 바꾸기">${t}</span></b><button class="p">+</button></div>`;
+      row.querySelector('.m').onclick=()=>{goals[k][0]=Math.max(0,v-1);store.set('goals',goals);renderGoals();};row.querySelector('.p').onclick=()=>{goals[k][0]=v+1;store.set('goals',goals);renderGoals();};
+      row.querySelector('b span').onclick=()=>{const nv=parseInt(prompt(n+' 목표 수',t));if(nv>0){goals[k][1]=nv;store.set('goals',goals);renderGoals();}};g.appendChild(row);});}
+    function renderWeek(){const w=R.querySelector('.wk');const c=weekly[wk];w.innerHTML=[['save','공고 저장'],['submit','서류 제출'],['interview','면접']].map(([k,n])=>`<button data-k="${k}" title="눌러서 +1"><b class="hand">${c[k]}</b><span>${n}</span></button>`).join('');w.querySelectorAll('button').forEach(b=>b.onclick=()=>{c[b.dataset.k]++;store.set('weekly',weekly);renderWeek();});}
+    const fp=R.querySelector('.focus p');fp.innerText=store.get('focus','');fp.oninput=()=>store.set('focus',fp.innerText);
+    renderGoals();renderWeek();render();
+    return root;
+  }
+  // backup
+  function encode(){return 'YFJ1.'+btoa(unescape(encodeURIComponent(JSON.stringify({v:1,deadlines:items,goals,weekly,focus:store.get('focus','')}))));}
+  function decode(s){s=String(s).trim();if(!s.startsWith('YFJ1.'))throw 0;return JSON.parse(decodeURIComponent(escape(atob(s.slice(5)))));}
+  function dialog(html){let d=document.querySelector('.dlg');if(!d){d=document.createElement('div');d.className='dlg';document.body.appendChild(d);d.onclick=e=>{if(e.target===d)d.classList.remove('open');};}d.innerHTML=`<div class="box2">${html}</div>`;d.classList.add('open');return d;}
+  function openExport(){const code=encode();const d=dialog(`<h3 class="hand">기록 내보내기</h3><p>아래 글자를 복사해 메모장이나 카톡 나에게 보내기에 붙여 두세요. 다른 기기에서 불러오기에 붙여 넣으면 그대로 옮겨져요.</p><textarea readonly></textarea><div class="acts"><button class="sec">닫기</button><button class="pri">복사하기</button></div>`);d.querySelector('textarea').value=code;d.querySelector('.sec').onclick=()=>d.classList.remove('open');d.querySelector('.pri').onclick=async()=>{try{await navigator.clipboard.writeText(code);toast('복사했어요');}catch(e){const ta=d.querySelector('textarea');ta.focus();ta.select();try{document.execCommand('copy');toast('복사했어요');}catch(e2){toast('길게 눌러 직접 복사해 주세요');}}};}
+  function openImport(){const d=dialog(`<h3 class="hand">기록 불러오기</h3><p>다른 기기에서 복사해 둔 글자를 붙여 넣어 주세요. 지금 기록은 붙여 넣은 기록으로 바뀌어요.</p><textarea class="in" placeholder="여기에 붙여 넣기"></textarea><div class="acts"><button class="sec">닫기</button><button class="pri">불러오기</button></div>`);d.querySelector('.sec').onclick=()=>d.classList.remove('open');d.querySelector('.pri').onclick=()=>{let p;try{p=decode(d.querySelector('textarea').value);}catch(e){toast('형식이 맞지 않아요. YFJ1. 으로 시작하는 글자인지 확인해 주세요');return;}store.set('deadlines',p.deadlines||[]);store.set('goals',p.goals||goals);store.set('weekly',p.weekly||{});store.set('focus',p.focus||'');d.classList.remove('open');toast('불러왔어요');setTimeout(()=>location.reload(),400);};}
+  document.getElementById('app').appendChild(board());
+})();
+</script>
+</body>
+</html>
