@@ -79,6 +79,41 @@
   .focus p:empty::before{content:'오늘 가장 집중할 한 가지';color:var(--faint)}
   .star{position:absolute;right:18px;bottom:12px;color:var(--coral);font-size:18px}
 
+  /* ---- pipeline : interviews + stage stickers ---- */
+  .pipe{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start}
+  @media (max-width:820px){.pipe{grid-template-columns:1fr}}
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-height:270px;overflow:auto;padding:10px 4px 4px;scrollbar-width:none}.cards::-webkit-scrollbar{display:none}
+  @media (max-width:560px){.cards{grid-template-columns:1fr}}
+  .pc{border-radius:14px;padding:14px 16px 12px;position:relative;min-height:96px}
+  .pc.y{background:var(--yellow)}.pc.c{background:var(--coral)}.pc.s{background:var(--sky)}.pc.g{background:var(--sage)}
+  .pc:nth-child(odd){transform:rotate(-.6deg)}.pc:nth-child(even){transform:rotate(.5deg)}
+  .pc .tape{left:50%;margin-left:-30px}
+  .pc .pco{font-size:17px;line-height:1.2;padding-right:60px}
+  .pc .pdt{font-size:11px;color:var(--ink);opacity:.75;margin-top:4px}
+  .pc .pk{display:inline-block;margin-top:8px;padding:3px 9px;border-radius:10px;background:rgba(255,255,255,.75);font-size:10.5px;font-weight:500}
+  .pc .pm{font-size:11px;color:var(--sub);margin-top:6px;line-height:1.4}
+  .pc .pdd{position:absolute;right:14px;top:12px;font-size:24px;line-height:1}
+  .pc.urgent .pdd{color:var(--coralD)}
+  .pc.done{opacity:.55}.pc.done .pco{text-decoration:line-through}
+  .pc .pdel,.pc .pchk{position:absolute;bottom:8px;font-size:12px;color:var(--sub);opacity:0;padding:2px 6px;border-radius:8px}
+  .pc .pchk{right:30px}.pc .pdel{right:8px}
+  .pc:hover .pdel,.pc:hover .pchk{opacity:1}
+  .pc .pdel.arm{opacity:1;background:var(--coralD);color:#fff;font-size:10px}
+  .pc.done .pchk{opacity:1}
+  .addi{display:none;grid-template-columns:1.1fr 120px 86px 1fr 64px;gap:8px;padding:10px 4px 0}
+  .addi.open{display:grid}
+  .addi input,.addi select{border:1px solid var(--line);border-radius:10px;padding:7px 10px;font-size:12px;background:#fff;outline:none;width:100%}
+  .addi input:focus{border-color:var(--ink)}
+  .addi button{background:var(--ink);color:#fff;border-radius:10px;font-size:12px;font-weight:700}
+  .stick{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 4px;padding-top:4px}
+  .stick .sc{text-align:center}
+  .stick .ci{width:48px;height:48px;border-radius:50%;margin:0 auto;display:grid;place-items:center;font-size:22px;line-height:1;transform:rotate(-3deg)}
+  .stick .sc:nth-child(even) .ci{transform:rotate(4deg)}
+  .stick .sl{font-size:10px;color:var(--sub);margin-top:5px;white-space:nowrap}
+  .stick .sc.zero .ci{background:#fff !important;border:1.5px dashed var(--faint);color:var(--faint)}
+  .tot{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding-top:10px;border-top:1.5px dotted var(--dot);font-size:11px;color:var(--sub)}
+  .tot b{font-size:20px;color:var(--ink);font-weight:400}
+
   /* menu & dialogs (shared pattern) */
   .menuwrap{position:relative}
   .menu{position:absolute;right:0;top:32px;width:190px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,.06);z-index:20;display:none;overflow:hidden}
@@ -110,7 +145,7 @@
   const key=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   const KD=['일','월','화','수','목','금','토'];
   const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  const STAGES={'관심':'var(--lilac)','서류 작성':'var(--yellow)','서류 제출':'var(--sky)','서류 합격':'var(--sage)','면접':'var(--lilac)','최종 합격':'var(--coral)'};
+  const STAGES={'관심':'var(--lilac)','서류 작성':'var(--yellow)','서류 제출':'var(--sky)','서류 합격':'var(--sage)','면접':'var(--lilac)','최종 합격':'var(--coral)','불합격':'var(--line)'};
   const CHECK='<svg viewBox="0 0 10 10" fill="none" stroke="#4A4540" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2 4.2 7.3 8 2.8"/></svg>';
   function weekKey(){const m=new Date(today);m.setDate(today.getDate()-((today.getDay()+6)%7));return key(m);}
   function toast(msg){let t=document.querySelector('.toast');if(!t){t=document.createElement('div');t.className='toast';document.body.appendChild(t);}t.textContent='✓  '+msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2200);}
@@ -142,7 +177,7 @@
     // menu
     const menu=L.querySelector('.menu'),more=L.querySelector('.more');more.onclick=e=>{e.stopPropagation();menu.classList.toggle('open');};document.addEventListener('click',()=>{menu.classList.remove('open');const d=menu.querySelector('.danger');d.classList.remove('arm');d.textContent='기록 모두 지우기';});menu.onclick=e=>e.stopPropagation();
     menu.querySelector('[data-a=clear]').onclick=()=>{items=items.filter(x=>!x.done&&x.d>=key(today));store.set('deadlines',items);menu.classList.remove('open');render();toast('지난 마감을 정리했어요');};
-    const rst=menu.querySelector('[data-a=reset]');rst.onclick=()=>{if(rst.classList.contains('arm')){['deadlines','goals','weekly','focus'].forEach(k=>{try{localStorage.removeItem('yfj_'+k)}catch(e){}});location.reload();}else{rst.classList.add('arm');rst.textContent='한 번 더 누르면 지워져요';}};
+    const rst=menu.querySelector('[data-a=reset]');rst.onclick=()=>{if(rst.classList.contains('arm')){['deadlines','goals','weekly','focus','interviews'].forEach(k=>{try{localStorage.removeItem('yfj_'+k)}catch(e){}});location.reload();}else{rst.classList.add('arm');rst.textContent='한 번 더 누르면 지워져요';}};
     menu.querySelector('[data-a=export]').onclick=()=>{menu.classList.remove('open');openExport();};
     menu.querySelector('[data-a=import]').onclick=()=>{menu.classList.remove('open');openImport();};
     // right
@@ -158,13 +193,46 @@
     renderGoals();renderWeek();render();
     return root;
   }
+  // ---- pipeline widget: interview post-its + stage stickers ----
+  const ISAMPLE=[{c:'하늘커머스',d:key(new Date(today.getTime()+3*864e5)),t:'14:00',k:'1차 실무',m:'포트폴리오 발표 10분'},{c:'오름소프트',d:key(new Date(today.getTime()+9*864e5)),t:'10:30',k:'과제 발표',m:'과제 PDF 전날 제출'}];
+  let interviews=store.get('interviews',null);if(!interviews){interviews=ISAMPLE.map(x=>({...x,id:Math.random().toString(36).slice(2),done:false}));store.set('interviews',interviews);}
+  function pipeline(){
+    const root=document.createElement('div');root.className='paper pipe';
+    const L=document.createElement('div');const R=document.createElement('div');root.append(L,R);
+    L.innerHTML=`<div class="lh"><span class="ttl hand">면접 일정</span><span class="meta up"></span><button class="addbtn">+ 면접 추가</button></div>
+      <div class="cards"></div>
+      <form class="addi"><input name="c" placeholder="회사명" maxlength="20" required><input name="d" type="date" required><input name="t" type="time"><input name="k" placeholder="전형 (1차 실무, 임원 등)" maxlength="12"><button type="submit">추가</button></form>`;
+    const cards=L.querySelector('.cards');const COLS=['y','s','g','c'];
+    function render(){
+      const sorted=[...interviews].sort((a,b)=>(a.done-b.done)||((a.d+(a.t||''))<(b.d+(b.t||''))?-1:1));
+      const up=interviews.filter(x=>!x.done&&x.d>=key(today)).length;L.querySelector('.up').textContent=up+' upcoming';
+      cards.innerHTML='';if(!sorted.length){cards.innerHTML='<div class="empty" style="grid-column:1/-1">아직 잡힌 면접이 없어요.<br>+ 면접 추가로 첫 일정을 적어 보세요.</div>';return;}
+      sorted.forEach((it,i)=>{const n=Math.round((new Date(it.d+'T00:00:00')-today)/864e5);const dt=new Date(it.d+'T00:00:00');
+        const el=document.createElement('div');el.className='pc '+COLS[i%4]+(it.done?' done':'')+(!it.done&&n>=0&&n<=3?' urgent':'');
+        el.innerHTML=`<i class="tape"></i><div class="pco hand">${esc(it.c)}</div><div class="pdt">${dt.getMonth()+1}.${dt.getDate()} (${KD[dt.getDay()]})${it.t?'  '+esc(it.t):''}</div>${it.k?`<span class="pk">${esc(it.k)}</span>`:''}${it.m?`<div class="pm">${esc(it.m)}</div>`:''}<div class="pdd hand">${dday(it.d)}</div><button class="pchk">${it.done?'다시 열기':'끝남'}</button><button class="pdel">×</button>`;
+        el.querySelector('.pchk').onclick=()=>{it.done=!it.done;store.set('interviews',interviews);render();};
+        const del=el.querySelector('.pdel');del.onclick=()=>{if(del.classList.contains('arm')){interviews=interviews.filter(x=>x.id!==it.id);store.set('interviews',interviews);render();}else{del.classList.add('arm');del.textContent='삭제';setTimeout(()=>{if(del.isConnected){del.classList.remove('arm');del.textContent='×';}},2500);}};
+        cards.appendChild(el);});
+    }
+    const form=L.querySelector('.addi');L.querySelector('.addbtn').onclick=()=>{form.classList.toggle('open');if(form.classList.contains('open'))form.c.focus();};
+    form.onsubmit=e=>{e.preventDefault();const f=form;if(!f.c.value.trim()||!f.d.value)return;interviews.push({id:Math.random().toString(36).slice(2),c:f.c.value.trim(),d:f.d.value,t:f.t.value,k:f.k.value.trim(),m:'',done:false});store.set('interviews',interviews);f.reset();form.classList.remove('open');render();};
+    // right : stage stickers from the deadline list
+    R.innerHTML=`<div class="sticky w"><div class="st hand">단계별 지원 수 <small>STATUS</small></div><div class="stick"></div><div class="tot"><span>저장한 공고</span><b class="hand"></b></div></div>`;
+    function renderStick(){const cur=store.get('deadlines',[])||[];const g=R.querySelector('.stick');g.innerHTML='';const cnt={};cur.forEach(x=>{cnt[x.s]=(cnt[x.s]||0)+1;});
+      Object.keys(STAGES).forEach(st=>{const n=cnt[st]||0;const d=document.createElement('div');d.className='sc'+(n?'':' zero');d.innerHTML=`<div class="ci hand" style="background:${STAGES[st]}">${n}</div><div class="sl">${st}</div>`;g.appendChild(d);});
+      R.querySelector('.tot b').textContent=cur.length;}
+    window.addEventListener('storage',e=>{if(e.key==='yfj_deadlines')renderStick();});setInterval(renderStick,5000);
+    render();renderStick();
+    return root;
+  }
+
   // backup
-  function encode(){return 'YFJ1.'+btoa(unescape(encodeURIComponent(JSON.stringify({v:1,deadlines:items,goals,weekly,focus:store.get('focus','')}))));}
+  function encode(){return 'YFJ1.'+btoa(unescape(encodeURIComponent(JSON.stringify({v:1,deadlines:items,goals,weekly,focus:store.get('focus',''),interviews:store.get('interviews',[])}))));}
   function decode(s){s=String(s).trim();if(!s.startsWith('YFJ1.'))throw 0;return JSON.parse(decodeURIComponent(escape(atob(s.slice(5)))));}
   function dialog(html){let d=document.querySelector('.dlg');if(!d){d=document.createElement('div');d.className='dlg';document.body.appendChild(d);d.onclick=e=>{if(e.target===d)d.classList.remove('open');};}d.innerHTML=`<div class="box2">${html}</div>`;d.classList.add('open');return d;}
   function openExport(){const code=encode();const d=dialog(`<h3 class="hand">기록 내보내기</h3><p>아래 글자를 복사해 메모장이나 카톡 나에게 보내기에 붙여 두세요. 다른 기기에서 불러오기에 붙여 넣으면 그대로 옮겨져요.</p><textarea readonly></textarea><div class="acts"><button class="sec">닫기</button><button class="pri">복사하기</button></div>`);d.querySelector('textarea').value=code;d.querySelector('.sec').onclick=()=>d.classList.remove('open');d.querySelector('.pri').onclick=async()=>{try{await navigator.clipboard.writeText(code);toast('복사했어요');}catch(e){const ta=d.querySelector('textarea');ta.focus();ta.select();try{document.execCommand('copy');toast('복사했어요');}catch(e2){toast('길게 눌러 직접 복사해 주세요');}}};}
-  function openImport(){const d=dialog(`<h3 class="hand">기록 불러오기</h3><p>다른 기기에서 복사해 둔 글자를 붙여 넣어 주세요. 지금 기록은 붙여 넣은 기록으로 바뀌어요.</p><textarea class="in" placeholder="여기에 붙여 넣기"></textarea><div class="acts"><button class="sec">닫기</button><button class="pri">불러오기</button></div>`);d.querySelector('.sec').onclick=()=>d.classList.remove('open');d.querySelector('.pri').onclick=()=>{let p;try{p=decode(d.querySelector('textarea').value);}catch(e){toast('형식이 맞지 않아요. YFJ1. 으로 시작하는 글자인지 확인해 주세요');return;}store.set('deadlines',p.deadlines||[]);store.set('goals',p.goals||goals);store.set('weekly',p.weekly||{});store.set('focus',p.focus||'');d.classList.remove('open');toast('불러왔어요');setTimeout(()=>location.reload(),400);};}
-  document.getElementById('app').appendChild(board());
+  function openImport(){const d=dialog(`<h3 class="hand">기록 불러오기</h3><p>다른 기기에서 복사해 둔 글자를 붙여 넣어 주세요. 지금 기록은 붙여 넣은 기록으로 바뀌어요.</p><textarea class="in" placeholder="여기에 붙여 넣기"></textarea><div class="acts"><button class="sec">닫기</button><button class="pri">불러오기</button></div>`);d.querySelector('.sec').onclick=()=>d.classList.remove('open');d.querySelector('.pri').onclick=()=>{let p;try{p=decode(d.querySelector('textarea').value);}catch(e){toast('형식이 맞지 않아요. YFJ1. 으로 시작하는 글자인지 확인해 주세요');return;}store.set('deadlines',p.deadlines||[]);store.set('goals',p.goals||goals);store.set('weekly',p.weekly||{});store.set('focus',p.focus||'');if(p.interviews)store.set('interviews',p.interviews);d.classList.remove('open');toast('불러왔어요');setTimeout(()=>location.reload(),400);};}
+  const only=qs.get('w');document.getElementById('app').appendChild(only==='pipeline'?pipeline():board());
 })();
 </script>
 </body>
