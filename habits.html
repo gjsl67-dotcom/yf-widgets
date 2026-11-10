@@ -113,13 +113,13 @@
   .prow .bar i{display:block;height:100%;background:var(--ink)}
 
   /* ---------- board : 노션 기본 높이 약 470px ---------- */
-  .board{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:auto auto 1fr;grid-template-areas:"hab clock" "hab note" "hab chk";width:100%;min-height:calc(100vh - 4px)}
+  .board{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:auto auto 1fr;grid-template-areas:"hab clock" "hab note" "hab chk";width:100%}
   .board>.w{padding:14px 20px;border:0 solid var(--line)}
   .board .b-hab{grid-area:hab;border-right-width:1px}
   .board .b-clock{grid-area:clock;border-bottom-width:1px}
   .board .b-note{grid-area:note;border-bottom-width:1px}
-  .board .b-chk{grid-area:chk;display:flex;flex-direction:column}
-  .board .b-chk textarea{flex:1;height:auto;min-height:26px}
+  .board .b-chk{grid-area:chk}
+  .board .b-chk textarea{height:78px}
   .board .clock .time{font-size:46px}
   .board .clock .mini{margin-top:12px}
   .board .clock .prow{padding:3px 0;grid-template-columns:44px 1fr 34px}
