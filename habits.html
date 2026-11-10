@@ -91,7 +91,9 @@
   .stepper b{min-width:52px;text-align:center;font-family:'Inter Tight';font-size:12px;font-weight:700;color:var(--ink);border-left:1px solid var(--line);border-right:1px solid var(--line);height:24px;line-height:24px}
 
   /* ---------- energy / sleep charts ---------- */
-  .chart svg{display:block;width:100%;height:auto;overflow:visible}
+  .solo .chart{padding:10px 18px 12px}
+  .chart .head{margin-bottom:6px;justify-content:flex-end}
+  .chart svg{display:block;width:100%;height:auto;overflow:hidden}
   .chart .gl{stroke:var(--line);stroke-width:1}
   .chart .ln{fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
   .chart .pt{fill:var(--ink)}
@@ -368,26 +370,26 @@
   function energy(){
     const w=document.createElement('div');w.className='w chart';
     return live(w,['checkin'],()=>{
-      const ci=store.get('checkin',{});const days=last7();const W=600,H=150,L=18,R=18,T=18,B=28;const vals=days.map(d=>MOODN[(ci[key(d)]||{}).mood]||null);
+      const ci=store.get('checkin',{});const days=last7();const W=600,H=120,L=18,R=18,T=12,B=26;const vals=days.map(d=>MOODN[(ci[key(d)]||{}).mood]||null);
       const x=i=>L+i*(W-L-R)/6, y=v=>T+(5-v)*(H-T-B)/4;
       let s=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">`;for(let v=1;v<=5;v++)s+=`<line class="gl" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/>`;
       const pts=vals.map((v,i)=>v?[x(i),y(v)]:null);let d='',open=false;pts.forEach(p=>{if(!p){open=false;return;}d+=(open?' L':' M')+p[0]+' '+p[1];open=true;});if(d)s+=`<path class="ln" d="${d}"/>`;
       pts.forEach((p,i)=>{s+=p?`<circle class="pt" cx="${p[0]}" cy="${p[1]}" r="4"/>`:`<circle class="pt e" cx="${x(i)}" cy="${y(3)}" r="3"/>`;});
       days.forEach((dd,i)=>s+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle">${DN[(dd.getDay()+6)%7]}</text>`);s+='</svg>';
       const have=vals.filter(Boolean);const avg=have.length?(have.reduce((a,b)=>a+b,0)/have.length):0;const name=have.length?['','지침','그저 그럼','괜찮음','좋음','최고'][Math.round(avg)]:'';
-      w.innerHTML=`<div class="head"><span class="ttl">energy</span><span class="meta">last 7 days</span></div>${s}<div class="foot"><span>7일 평균 <b>${have.length?avg.toFixed(1):'–'}</b> ${name?'· '+name:''}</span><span>체크인한 날 <b>${have.length}</b>/7</span></div>`.replace(' · ',', ');
+      w.innerHTML=`<div class="head"><span class="meta">last 7 days</span></div>${s}<div class="foot"><span>7일 평균 <b>${have.length?avg.toFixed(1):'–'}</b> ${name?'· '+name:''}</span><span>체크인한 날 <b>${have.length}</b>/7</span></div>`.replace(' · ',', ');
     });
   }
   function sleep(){
     const w=document.createElement('div');w.className='w chart';
     return live(w,['checkin'],()=>{
-      const ci=store.get('checkin',{});const days=last7();const W=600,H=150,L=18,R=18,T=22,B=28;const vals=days.map(d=>{const v=(ci[key(d)]||{}).sleep;return typeof v==='number'?v:null;});
+      const ci=store.get('checkin',{});const days=last7();const W=600,H=120,L=18,R=18,T=20,B=26;const vals=days.map(d=>{const v=(ci[key(d)]||{}).sleep;return typeof v==='number'?v:null;});
       const max=Math.max(8,...vals.filter(v=>v!=null));const bw=(W-L-R)/7*0.62,step=(W-L-R)/7;const mx=Math.max(...vals.map(v=>v==null?-1:v));
       let s=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">`;s+=`<line class="gl" x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}"/>`;
       vals.forEach((v,i)=>{const cx=L+i*step+step/2;if(v==null){s+=`<rect class="bar e" x="${cx-bw/2}" y="${H-B-30}" width="${bw}" height="30" rx="2"/>`;}else{const h=Math.max(3,(v/max)*(H-T-B));s+=`<rect class="bar ${v===mx&&v>0?'max':''}" x="${cx-bw/2}" y="${H-B-h}" width="${bw}" height="${h}" rx="2"/><text class="v" x="${cx}" y="${H-B-h-6}" text-anchor="middle">${v}</text>`;}
         s+=`<text x="${cx}" y="${H-8}" text-anchor="middle">${DN[(days[i].getDay()+6)%7]}</text>`;});s+='</svg>';
       const have=vals.filter(v=>v!=null);const avg=have.length?(have.reduce((a,b)=>a+b,0)/have.length):0;
-      w.innerHTML=`<div class="head"><span class="ttl">sleep</span><span class="meta">last 7 days</span></div>${s}<div class="foot"><span>7일 평균 <b>${have.length?avg.toFixed(1)+' h':'–'}</b></span><span>${have.length?'가장 긴 밤 <b>'+mx+' h</b>':'체크인에서 어젯밤 수면을 눌러 보세요'}</span></div>`;
+      w.innerHTML=`<div class="head"><span class="meta">last 7 days</span></div>${s}<div class="foot"><span>7일 평균 <b>${have.length?avg.toFixed(1)+' h':'–'}</b></span><span>${have.length?'가장 긴 밤 <b>'+mx+' h</b>':'체크인에서 어젯밤 수면을 눌러 보세요'}</span></div>`;
     });
   }
   function board(){
