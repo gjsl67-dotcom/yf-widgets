@@ -84,6 +84,25 @@
     background-image:linear-gradient(to bottom,transparent 27px,var(--line) 27px);background-size:100% 28px;padding:0}
   textarea::placeholder{color:var(--faint)}
 
+  .sleeprow{display:flex;align-items:center;justify-content:space-between;margin:10px 0 2px;font-family:'Gothic A1';font-size:11px;color:var(--sub)}
+  .stepper{display:inline-flex;align-items:center;border:1.5px solid var(--ink)}
+  .stepper button{width:26px;height:24px;font-weight:700;font-size:13px}
+  .stepper button:hover{background:var(--tint)}
+  .stepper b{min-width:52px;text-align:center;font-family:'Inter Tight';font-size:12px;font-weight:700;color:var(--ink);border-left:1px solid var(--line);border-right:1px solid var(--line);height:24px;line-height:24px}
+
+  /* ---------- energy / sleep charts ---------- */
+  .chart svg{display:block;width:100%;height:auto;overflow:visible}
+  .chart .gl{stroke:var(--line);stroke-width:1}
+  .chart .ln{fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+  .chart .pt{fill:var(--ink)}
+  .chart .pt.e{fill:#fff;stroke:var(--faint);stroke-width:1.5}
+  .chart .bar{fill:#CFCFCF}.chart .bar.max{fill:var(--ink)}.chart .bar.e{fill:none;stroke:var(--line);stroke-width:1;stroke-dasharray:3 3}
+  .chart text{font-family:'Inter Tight';font-size:10px;fill:var(--sub);font-weight:600;letter-spacing:.08em}
+  .chart text.v{fill:var(--ink);font-size:11px;font-weight:700;letter-spacing:0}
+  .chart text.k{font-family:'Gothic A1';fill:var(--faint);font-weight:500;letter-spacing:0}
+  .chart .foot{display:flex;justify-content:space-between;margin-top:8px;font-family:'Gothic A1';font-size:11px;color:var(--sub)}
+  .chart .foot b{color:var(--ink);font-family:'Inter Tight'}
+
   /* ---------- progress ---------- */
   .prow{display:grid;grid-template-columns:52px 1fr 40px;align-items:center;gap:12px;padding:7px 0}
   .prow .k{font-family:'Gothic A1';font-size:12px}
@@ -271,9 +290,13 @@
     const w=document.createElement('div');w.className='w';
     const all=store.get('checkin',{});const t=all[key(today)]||{mood:'',text:''};
     const moods=[['지침','#FFFFFF'],['그저 그럼','#E4E4E4'],['괜찮음','#B5B5B5'],['좋음','#6E6E6E'],['최고','#111111']];
-    w.innerHTML=`<div class="head"><span class="ttl">check-in</span><span class="meta">${pad(today.getMonth()+1)}/${pad(today.getDate())}</span></div><div class="moods">${moods.map(([m,c])=>`<button class="mood ${t.mood===m?'on':''}" data-m="${m}"><i style="background:${c}"></i>${m}</button>`).join('')}</div><textarea rows="2" placeholder="오늘을 두 줄로 남겨 보세요">${esc(t.text||'')}</textarea>`;
-    w.querySelectorAll('.mood').forEach(b=>b.onclick=()=>{t.mood=b.dataset.m;all[key(today)]=t;store.set('checkin',all);w.querySelectorAll('.mood').forEach(x=>x.classList.toggle('on',x===b));});
-    w.querySelector('textarea').oninput=e=>{t.text=e.target.value;all[key(today)]=t;store.set('checkin',all);};
+    w.innerHTML=`<div class="head"><span class="ttl">check-in</span><span class="meta">${pad(today.getMonth()+1)}/${pad(today.getDate())}</span></div><div class="moods">${moods.map(([m,c])=>`<button class="mood ${t.mood===m?'on':''}" data-m="${m}"><i style="background:${c}"></i>${m}</button>`).join('')}</div><div class="sleeprow"><span>어젯밤 수면</span><span class="stepper"><button class="sm" aria-label="30분 줄이기">−</button><b class="sv"></b><button class="sp" aria-label="30분 늘리기">+</button></span></div><textarea rows="2" placeholder="오늘을 두 줄로 남겨 보세요">${esc(t.text||'')}</textarea>`;
+    const save=()=>{all[key(today)]=t;store.set('checkin',all);};
+    w.querySelectorAll('.mood').forEach(b=>b.onclick=()=>{t.mood=b.dataset.m;save();w.querySelectorAll('.mood').forEach(x=>x.classList.toggle('on',x===b));});
+    const sv=w.querySelector('.sv');const showS=()=>{sv.textContent=t.sleep==null?'– h':(t.sleep+' h');};showS();
+    w.querySelector('.sm').onclick=()=>{t.sleep=Math.max(0,((t.sleep==null?7:t.sleep)-0.5));save();showS();};
+    w.querySelector('.sp').onclick=()=>{t.sleep=Math.min(14,((t.sleep==null?6.5:t.sleep)+0.5));save();showS();};
+    w.querySelector('textarea').oninput=e=>{t.text=e.target.value;save();};
     return w;
   }
   function note(){
@@ -338,12 +361,41 @@
       <div class="hm"><div></div><div class="mo">${months}</div><div class="dl"><span>M</span><span></span><span>W</span><span></span><span>F</span><span></span><span></span></div><div class="cells">${cells}</div></div>
       <div class="legend"><div class="r"><em>■ 오늘</em><em style="color:var(--sub);margin-left:10px">칸에 마우스를 올리면 그날 기록이 떠요</em></div><div class="r">LESS <i style="background:#EEEEEE"></i><i style="background:#C8C8C8"></i><i style="background:#7A7A7A"></i><i style="background:#111111"></i> MORE</div></div>`;
   }
+  // ---------- energy / sleep (최근 7일, 체크인 기록 기준) ----------
+  const MOODN={'지침':1,'그저 그럼':2,'괜찮음':3,'좋음':4,'최고':5};
+  function last7(){return [...Array(7)].map((_,i)=>{const d=new Date(today);d.setDate(today.getDate()-6+i);return d;});}
+  function live(w,keys,fn){let sig='';const draw=()=>{const s=keys.map(k=>localStorage.getItem('yf_'+k)||'').join('|');if(s===sig)return;sig=s;fn();};try{window.addEventListener('storage',draw);setInterval(draw,5000);}catch(e){}draw();return w;}
+  function energy(){
+    const w=document.createElement('div');w.className='w chart';
+    return live(w,['checkin'],()=>{
+      const ci=store.get('checkin',{});const days=last7();const W=600,H=150,L=18,R=18,T=18,B=28;const vals=days.map(d=>MOODN[(ci[key(d)]||{}).mood]||null);
+      const x=i=>L+i*(W-L-R)/6, y=v=>T+(5-v)*(H-T-B)/4;
+      let s=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">`;for(let v=1;v<=5;v++)s+=`<line class="gl" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/>`;
+      const pts=vals.map((v,i)=>v?[x(i),y(v)]:null);let d='',open=false;pts.forEach(p=>{if(!p){open=false;return;}d+=(open?' L':' M')+p[0]+' '+p[1];open=true;});if(d)s+=`<path class="ln" d="${d}"/>`;
+      pts.forEach((p,i)=>{s+=p?`<circle class="pt" cx="${p[0]}" cy="${p[1]}" r="4"/>`:`<circle class="pt e" cx="${x(i)}" cy="${y(3)}" r="3"/>`;});
+      days.forEach((dd,i)=>s+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle">${DN[(dd.getDay()+6)%7]}</text>`);s+='</svg>';
+      const have=vals.filter(Boolean);const avg=have.length?(have.reduce((a,b)=>a+b,0)/have.length):0;const name=have.length?['','지침','그저 그럼','괜찮음','좋음','최고'][Math.round(avg)]:'';
+      w.innerHTML=`<div class="head"><span class="ttl">energy</span><span class="meta">last 7 days</span></div>${s}<div class="foot"><span>7일 평균 <b>${have.length?avg.toFixed(1):'–'}</b> ${name?'· '+name:''}</span><span>체크인한 날 <b>${have.length}</b>/7</span></div>`.replace(' · ',', ');
+    });
+  }
+  function sleep(){
+    const w=document.createElement('div');w.className='w chart';
+    return live(w,['checkin'],()=>{
+      const ci=store.get('checkin',{});const days=last7();const W=600,H=150,L=18,R=18,T=22,B=28;const vals=days.map(d=>{const v=(ci[key(d)]||{}).sleep;return typeof v==='number'?v:null;});
+      const max=Math.max(8,...vals.filter(v=>v!=null));const bw=(W-L-R)/7*0.62,step=(W-L-R)/7;const mx=Math.max(...vals.map(v=>v==null?-1:v));
+      let s=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">`;s+=`<line class="gl" x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}"/>`;
+      vals.forEach((v,i)=>{const cx=L+i*step+step/2;if(v==null){s+=`<rect class="bar e" x="${cx-bw/2}" y="${H-B-30}" width="${bw}" height="30" rx="2"/>`;}else{const h=Math.max(3,(v/max)*(H-T-B));s+=`<rect class="bar ${v===mx&&v>0?'max':''}" x="${cx-bw/2}" y="${H-B-h}" width="${bw}" height="${h}" rx="2"/><text class="v" x="${cx}" y="${H-B-h-6}" text-anchor="middle">${v}</text>`;}
+        s+=`<text x="${cx}" y="${H-8}" text-anchor="middle">${DN[(days[i].getDay()+6)%7]}</text>`;});s+='</svg>';
+      const have=vals.filter(v=>v!=null);const avg=have.length?(have.reduce((a,b)=>a+b,0)/have.length):0;
+      w.innerHTML=`<div class="head"><span class="ttl">sleep</span><span class="meta">last 7 days</span></div>${s}<div class="foot"><span>7일 평균 <b>${have.length?avg.toFixed(1)+' h':'–'}</b></span><span>${have.length?'가장 긴 밤 <b>'+mx+' h</b>':'체크인에서 어젯밤 수면을 눌러 보세요'}</span></div>`;
+    });
+  }
   function board(){
     const b=document.createElement('div');b.className='board';
     [[habits(),'b-hab'],[clock(false),'b-clock'],[note(),'b-note'],[checkin(),'b-chk']].forEach(([el,c])=>{el.classList.add(c);b.appendChild(el);});
     return b;
   }
-  const M={board,year,habits,clock:()=>clock(false),progress,checkin,note};
+  const M={board,year,energy,sleep,habits,clock:()=>clock(false),progress,checkin,note};
   const app=document.getElementById('app');
   if(only&&M[only]){document.body.classList.add('solo');app.appendChild(M[only]());}
   else{
