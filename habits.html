@@ -309,6 +309,12 @@
   // ---------- year heatmap ----------
   function year(){
     const w=document.createElement('div');w.className='w year';
+    // 위젯 판(다른 임베드)에서 체크하면 바로 따라 그리기 : storage 이벤트 + 5초마다 변경 확인
+    let sig='';const draw=()=>{const s=(localStorage.getItem('yf_habits')||'')+'|'+(localStorage.getItem('yf_habit_list')||'');if(s===sig)return;sig=s;renderYear(w);};
+    try{window.addEventListener('storage',draw);setInterval(draw,5000);}catch(e){}
+    draw();return w;
+  }
+  function renderYear(w){
     const data=store.get('habits',{});const list=store.get('habit_list',DEFAULT);
     const Y=today.getFullYear();
     const ratio=k=>{const d=data[k];if(!d)return 0;const n=list.filter(h=>d[h]).length;return list.length?n/list.length:0;};
@@ -331,7 +337,6 @@
     w.innerHTML=`<div class="yhead"><div><div class="yr">${Y}</div><div class="big">HABITS YEAR</div></div><div class="stats">${stat(streak,'DAYS','연속 기록')}${stat(best,'DAYS','최장 연속')}${stat(doneDays,'DAYS','올해 달성')}</div></div>
       <div class="hm"><div></div><div class="mo">${months}</div><div class="dl"><span>M</span><span></span><span>W</span><span></span><span>F</span><span></span><span></span></div><div class="cells">${cells}</div></div>
       <div class="legend"><div class="r"><em>■ 오늘</em><em style="color:var(--sub);margin-left:10px">칸에 마우스를 올리면 그날 기록이 떠요</em></div><div class="r">LESS <i style="background:#EEEEEE"></i><i style="background:#C8C8C8"></i><i style="background:#7A7A7A"></i><i style="background:#111111"></i> MORE</div></div>`;
-    return w;
   }
   function board(){
     const b=document.createElement('div');b.className='board';
